@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoFood Monitor — Login</title>
+  <meta name="description" content="EcoFood Monitor — Redução do desperdício de alimentos com inteligência na gestão de validade e temperatura.">
+  <meta property="og:title" content="EcoFood Monitor">
+  <meta property="og:description" content="Sistema inteligente para redução do desperdício de alimentos.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#059669">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {} }
+    }
+  </script>
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23059669'/%3E%3Cpath d='M16 6c-2 4-3.5 7-5 9-1.5 2-3 4-5 5 2 1 4 2 6 2 3 0 6-1 8-3s3-5 3-8c0-2-1-4-3-5s-4-1-4 0z' fill='white' opacity='0.9'/%3E%3C/svg%3E" type="image/svg+xml">
+</head>
+<body class="bg-grid">
+  <!-- Blobs decorativos -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <!-- Theme toggle flutuante -->
+  <button id="theme-toggle" class="btn-icon fixed top-5 right-5 z-50 !w-10 !h-10 rounded-full shadow-lg" aria-label="Alternar tema"></button>
+
+  <!-- Container principal -->
+  <main class="min-h-screen flex items-center justify-center px-4 py-12 relative">
+    <div class="w-full max-w-[420px] animate-fade-in-up">
+      <!-- Logo -->
+      <div class="text-center mb-10">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-lg shadow-emerald-500/20 mb-5 animate-float">
+          <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C8 8 5 12 3 14c-2 2-3 4-3 6 0 1.1.9 2 2 2 3 0 7-2 10-6s5-8 5-12c0-1.1-.9-2-2-2s-2 .9-2 2 1 4 1 6c0 2-1 4-2 5s-3 2-5 2c-1 0-2-.3-3-.8 1-1.5 2-3 3-4.5s3-4.5 6-9.7z"/>
+          </svg>
+        </div>
+        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+          EcoFood <span class="text-emerald-600 dark:text-emerald-400">Monitor</span>
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-2 text-sm">
+          Reduza o desperdício. Aumente a eficiência.
+        </p>
+      </div>
+
+      <!-- Card de login -->
+      <div class="glass-card p-8">
+        <form id="login-form" class="space-y-5">
+          <div>
+            <label for="email" class="input-label">E-mail</label>
+            <input
+              type="email"
+              id="email"
+              class="input"
+              placeholder="seu@email.com"
+              value="admin@ecofood.com"
+              required
+            >
+          </div>
+
+          <div>
+            <label for="password" class="input-label">Senha</label>
+            <input
+              type="password"
+              id="password"
+              class="input"
+              placeholder="••••••••"
+              value="123456"
+              required
+            >
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full !py-3 !text-base">
+            Entrar
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
+          <p class="text-xs text-gray-400 dark:text-gray-500 text-center">
+            © 2026 EcoFood Monitor · Projeto Acadêmico
+          </p>
+        </div>
+      </div>
+
+      <!-- Eco-score preview pill -->
+      <div class="flex items-center justify-center gap-2 mt-8 text-xs text-gray-400 dark:text-gray-500">
+        <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+        <span>Sustentabilidade em cada etapa</span>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      showToast('Entrando no painel...', 'info', 1500);
+      setTimeout(() => goTo('dashboard.html'), 600);
+    });
+  </script>
+</body>
+</html>

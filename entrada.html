@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoFood Monitor — Entrada de Lotes</title>
+  <meta name="description" content="Registre lotes de produtos com scan inteligente e cálculo de Eco-Score.">
+  <meta name="theme-color" content="#059669">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: {} } }
+  </script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23059669'/%3E%3Cpath d='M16 6c-2 4-3.5 7-5 9-1.5 2-3 4-5 5 2 1 4 2 6 2 3 0 6-1 8-3s3-5 3-8c0-2-1-4-3-5s-4-1-4 0z' fill='white' opacity='0.9'/%3E%3C/svg%3E" type="image/svg+xml">
+</head>
+<body class="bg-grid min-h-screen">
+  <!-- Blobs -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="dashboard.html" class="nav-logo">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C8 8 5 12 3 14c-2 2-3 4-3 6 0 1.1.9 2 2 2 3 0 7-2 10-6s5-8 5-12c0-1.1-.9-2-2-2s-2 .9-2 2 1 4 1 6c0 2-1 4-2 5s-3 2-5 2c-1 0-2-.3-3-.8 1-1.5 2-3 3-4.5s3-4.5 6-9.7z"/>
+          </svg>
+        </div>
+        <span>EcoFood Monitor</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="entrada.html" class="nav-link active">Entrada</a>
+        <a href="monitoramento.html" class="nav-link">Monitoramento</a>
+      </div>
+
+      <div class="nav-actions">
+        <button id="theme-toggle" class="btn-icon !w-9 !h-9 rounded-full" aria-label="Alternar tema"></button>
+        <button onclick="resetAllData()" class="btn-icon !w-9 !h-9 rounded-full !text-red-400 hover:!bg-red-50 dark:hover:!bg-red-900/20 hover:!text-red-500" title="Resetar dados do sistema">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+          </svg>
+        </button>
+        <a href="index.html" class="btn btn-ghost btn-sm !text-red-500 hover:!text-red-600 !border-red-200 dark:!border-red-900">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
+          </svg>
+          Sair
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="pt-24 pb-12 px-4 max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-10 animate-fade-in-up">
+      <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">
+        <span class="text-emerald-600 dark:text-emerald-400">Inteligência</span> na Entrada
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-2">
+        Registre lotes em segundos. O scan simulado reduz a digitação manual em até <strong class="text-emerald-600 dark:text-emerald-400">80%</strong>.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-5 gap-6">
+      <!-- Formulário -->
+      <div class="md:col-span-3 glass-card p-6 animate-fade-in-up stagger-1">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/>
+            </svg>
+            Novo Lote
+          </h2>
+          <button id="scan-btn" type="button" class="btn btn-primary btn-sm">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/>
+              <path d="M6 6h.008v.008H6V6z"/>
+            </svg>
+            Escanear Lote
+          </button>
+        </div>
+
+        <form id="produto-form" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2 sm:col-span-1">
+              <label for="nome" class="input-label">Nome do Produto *</label>
+              <input type="text" id="nome" class="input" placeholder="Ex: Tomate Orgânico" required>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+              <label for="lote" class="input-label">Código do Lote</label>
+              <input type="text" id="lote" class="input" placeholder="Ex: LOT-2026-001">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="validade" class="input-label">Data de Validade *</label>
+              <input type="date" id="validade" class="input" required>
+            </div>
+            <div>
+              <label for="temperatura" class="input-label">Temperatura (°C)</label>
+              <input type="number" id="temperatura" class="input" placeholder="Ex: 4" step="0.1">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="categoria" class="input-label">Categoria</label>
+              <select id="categoria" class="select">
+                <option value="geral">Geral</option>
+                <option value="orgânico">Orgânico</option>
+                <option value="vegetais">Vegetais</option>
+                <option value="frutas">Frutas</option>
+                <option value="laticínios">Laticínios</option>
+                <option value="carnes">Carnes</option>
+                <option value="grãos">Grãos</option>
+                <option value="bebidas">Bebidas</option>
+              </select>
+            </div>
+            <div>
+              <label for="quantidade" class="input-label">Quantidade (unidades)</label>
+              <input type="number" id="quantidade" class="input" placeholder="Ex: 50">
+            </div>
+          </div>
+
+          <div>
+            <label for="fornecedor" class="input-label">Fornecedor</label>
+            <input type="text" id="fornecedor" class="input" placeholder="Ex: Horta Feliz Ltda">
+          </div>
+
+          <div>
+            <label for="zona-produto" class="input-label">Zona de Armazenamento</label>
+            <select id="zona-produto" class="select">
+              <option value="">— Selecione uma zona —</option>
+            </select>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" class="btn btn-primary w-full !py-3">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Salvar Lote
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Sidebar: Eco-Score Preview -->
+      <div class="md:col-span-2 space-y-6">
+        <div class="glass-card p-6 animate-fade-in-up stagger-2">
+          <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            Eco-Score ao Vivo
+          </h3>
+          <div id="eco-score-display" class="flex items-center justify-center min-h-[80px]">
+            <p class="text-sm text-gray-400 dark:text-gray-500 text-center">
+              Preencha os campos do formulário<br>para ver o Eco-Score em tempo real.
+            </p>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 animate-fade-in-up stagger-3">
+          <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+            Como funciona
+          </h3>
+          <ul class="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-bold">1</span>
+              <span>Clique em <strong>"Escanear Lote"</strong> para simular a leitura de um código de barras.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-bold">2</span>
+              <span>O formulário é preenchido automaticamente com dados mockados.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-bold">3</span>
+              <span>Ao salvar, o <strong>Eco-Score</strong> é calculado e o produto vai para o Dashboard.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/entrada.js"></script>
+</body>
+</html>

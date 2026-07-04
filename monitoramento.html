@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoFood Monitor — Monitoramento</title>
+  <meta name="description" content="Acompanhe temperatura e umidade das zonas de armazenamento em tempo real.">
+  <meta name="theme-color" content="#059669">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: {} } }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23059669'/%3E%3Cpath d='M16 6c-2 4-3.5 7-5 9-1.5 2-3 4-5 5 2 1 4 2 6 2 3 0 6-1 8-3s3-5 3-8c0-2-1-4-3-5s-4-1-4 0z' fill='white' opacity='0.9'/%3E%3C/svg%3E" type="image/svg+xml">
+</head>
+<body class="bg-grid min-h-screen">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="dashboard.html" class="nav-logo">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C8 8 5 12 3 14c-2 2-3 4-3 6 0 1.1.9 2 2 2 3 0 7-2 10-6s5-8 5-12c0-1.1-.9-2-2-2s-2 .9-2 2 1 4 1 6c0 2-1 4-2 5s-3 2-5 2c-1 0-2-.3-3-.8 1-1.5 2-3 3-4.5s3-4.5 6-9.7z"/>
+          </svg>
+        </div>
+        <span>EcoFood Monitor</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="entrada.html" class="nav-link">Entrada</a>
+        <a href="monitoramento.html" class="nav-link active">Monitoramento</a>
+      </div>
+
+      <div class="nav-actions">
+        <button id="theme-toggle" class="btn-icon !w-9 !h-9 rounded-full" aria-label="Alternar tema"></button>
+        <button onclick="resetAllData()" class="btn-icon !w-9 !h-9 rounded-full !text-red-400 hover:!bg-red-50 dark:hover:!bg-red-900/20 hover:!text-red-500" title="Resetar dados do sistema">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+          </svg>
+        </button>
+        <a href="index.html" class="btn btn-ghost btn-sm !text-red-500 hover:!text-red-600 !border-red-200 dark:!border-red-900">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
+          </svg>
+          Sair
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="pt-24 pb-12 px-4 max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in-up">
+      <div>
+        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">
+          <span class="text-emerald-600 dark:text-emerald-400">Monitoramento</span> de Zonas
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+          Acompanhe temperatura e umidade de cada zona de armazenamento ao longo do tempo.
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <select id="monitor-zona-select" class="select !w-auto min-w-[200px]">
+          <option value="">— Selecione uma zona —</option>
+        </select>
+        <select id="monitor-metrica-select" class="select !w-auto min-w-[160px]">
+          <option value="temperatura">🌡️ Temperatura</option>
+          <option value="umidade">💧 Umidade</option>
+          <option value="ambas">📊 Ambas</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div id="monitor-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 animate-fade-in-up stagger-1">
+      <div class="glass-card p-5 text-center">
+        <p class="text-xs text-gray-400 mb-1">Temperatura Média</p>
+        <p class="text-2xl font-extrabold text-gray-900 dark:text-white" id="monitor-temp-media">—</p>
+      </div>
+      <div class="glass-card p-5 text-center">
+        <p class="text-xs text-gray-400 mb-1">Umidade Média</p>
+        <p class="text-2xl font-extrabold text-gray-900 dark:text-white" id="monitor-umid-media">—</p>
+      </div>
+      <div class="glass-card p-5 text-center">
+        <p class="text-xs text-gray-400 mb-1">Saúde do Ambiente</p>
+        <p class="text-2xl font-extrabold" id="monitor-saude">—</p>
+      </div>
+      <div class="glass-card p-5 text-center">
+        <p class="text-xs text-gray-400 mb-1">Produtos na Zona</p>
+        <p class="text-2xl font-extrabold text-gray-900 dark:text-white" id="monitor-produtos">—</p>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="glass-card p-5 mb-8 animate-fade-in-up stagger-2">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider" id="monitor-chart-title">
+          Histórico de Leituras
+        </h3>
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 animate-pulse">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          AO VIVO
+        </span>
+      </div>
+      <div class="h-72 relative">
+        <canvas id="chart-monitoramento"></canvas>
+        <div id="monitor-empty" class="absolute inset-0 flex items-center justify-center">
+          <div class="text-center">
+            <svg class="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-2" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+              <path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+            </svg>
+            <p class="text-sm text-gray-400 dark:text-gray-500">Selecione uma zona acima<br>para ver o histórico.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info: tabela comparativa -->
+    <div class="glass-card overflow-hidden animate-fade-in-up stagger-3">
+      <div class="p-5">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+          Comparativo de Zonas
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-100 dark:border-gray-800">
+                <th class="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Zona</th>
+                <th class="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Temp Atual</th>
+                <th class="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Faixa Ideal</th>
+                <th class="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Umid Atual</th>
+                <th class="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Faixa Ideal</th>
+                <th class="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Produtos</th>
+              </tr>
+            </thead>
+            <tbody id="monitor-comparativo-tbody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/monitoramento.js"></script>
+</body>
+</html>

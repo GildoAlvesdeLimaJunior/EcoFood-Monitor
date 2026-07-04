@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoFood Monitor — Dashboard</title>
+  <meta name="description" content="Painel de controle para gestão de lotes críticos e monitoramento de desperdício.">
+  <meta name="theme-color" content="#059669">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: {} } }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23059669'/%3E%3Cpath d='M16 6c-2 4-3.5 7-5 9-1.5 2-3 4-5 5 2 1 4 2 6 2 3 0 6-1 8-3s3-5 3-8c0-2-1-4-3-5s-4-1-4 0z' fill='white' opacity='0.9'/%3E%3C/svg%3E" type="image/svg+xml">
+</head>
+<body class="bg-grid min-h-screen">
+  <!-- Blobs -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-3"></div>
+
+  <!-- Modal Overlay (Zonas) -->
+  <div id="zona-modal-overlay" class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 ease-out" onclick="closeZonaModal()"></div>
+
+  <!-- Zona Modal -->
+  <div id="zona-modal" class="fixed inset-0 z-50 flex items-center justify-center px-4 py-8 hidden">
+    <div id="zona-modal-box" class="w-full max-w-lg glass-card overflow-hidden scale-95 opacity-0 transition-all duration-300 ease-out max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+          </svg>
+          Nova Zona de Armazenamento
+        </h3>
+        <button onclick="closeZonaModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="px-6 py-5">
+        <form id="zona-form" class="space-y-4">
+          <div>
+            <label class="input-label">Categoria</label>
+            <select id="zona-categoria" class="select">
+              <option value="">— Selecione uma categoria —</option>
+              <option value="geladeira">🧊 Geladeira</option>
+              <option value="freezer">❄️ Freezer</option>
+              <option value="estoque">🏭 Estoque Principal</option>
+              <option value="camara">🥶 Câmara Fria</option>
+              <option value="adega">🍷 Adega / Vinho</option>
+              <option value="seco">📦 Estoque Seco</option>
+              <option value="personalizado">⚙️ Personalizado</option>
+            </select>
+          </div>
+          <div>
+            <label for="zona-nome" class="input-label">Nome da Zona</label>
+            <input type="text" id="zona-nome" class="input" placeholder="Ex: Geladeira Principal" required>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label for="zona-temp-ideal" class="input-label">Temp. Ideal (°C)</label>
+              <input type="number" id="zona-temp-ideal" class="input" step="0.1" required>
+            </div>
+            <div>
+              <label for="zona-temp-min" class="input-label">Temp. Mín (°C)</label>
+              <input type="number" id="zona-temp-min" class="input" step="0.1" required>
+            </div>
+            <div>
+              <label for="zona-temp-max" class="input-label">Temp. Máx (°C)</label>
+              <input type="number" id="zona-temp-max" class="input" step="0.1" required>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label for="zona-umid-ideal" class="input-label">Umid. Ideal (%)</label>
+              <input type="number" id="zona-umid-ideal" class="input" min="0" max="100" required>
+            </div>
+            <div>
+              <label for="zona-umid-min" class="input-label">Umid. Mín (%)</label>
+              <input type="number" id="zona-umid-min" class="input" min="0" max="100" required>
+            </div>
+            <div>
+              <label for="zona-umid-max" class="input-label">Umid. Máx (%)</label>
+              <input type="number" id="zona-umid-max" class="input" min="0" max="100" required>
+            </div>
+          </div>
+
+          <!-- Guia de Indicações -->
+          <details class="bg-gray-50 dark:bg-gray-800/30 rounded-xl p-4">
+            <summary class="text-sm font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+              📖 Guia de Indicações
+            </summary>
+            <div class="mt-3 overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="border-b border-gray-200 dark:border-gray-700">
+                    <th class="text-left py-2 pr-3 font-semibold text-gray-500">Categoria</th>
+                    <th class="text-left py-2 pr-3 font-semibold text-gray-500">Temp Ideal</th>
+                    <th class="text-left py-2 pr-3 font-semibold text-gray-500">Faixa Segura</th>
+                    <th class="text-left py-2 pr-3 font-semibold text-gray-500">Umid Ideal</th>
+                    <th class="text-left py-2 font-semibold text-gray-500">Faixa Segura</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-gray-100 dark:border-gray-800"><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">🧊 Geladeira</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">4°C</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">1°C – 8°C</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">80%</td><td class="py-2 text-gray-700 dark:text-gray-300">70% – 90%</td></tr>
+                  <tr class="border-b border-gray-100 dark:border-gray-800"><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">❄️ Freezer</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">-18°C</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">-22°C a -5°C</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">30%</td><td class="py-2 text-gray-700 dark:text-gray-300">20% – 40%</td></tr>
+                  <tr class="border-b border-gray-100 dark:border-gray-800"><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">🏭 Estoque Principal</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">25°C</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">20°C – 30°C</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">60%</td><td class="py-2 text-gray-700 dark:text-gray-300">45% – 75%</td></tr>
+                  <tr class="border-b border-gray-100 dark:border-gray-800"><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">🥶 Câmara Fria</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">2°C</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">0°C – 5°C</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">88%</td><td class="py-2 text-gray-700 dark:text-gray-300">80% – 95%</td></tr>
+                  <tr class="border-b border-gray-100 dark:border-gray-800"><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">🍷 Adega / Vinho</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">12°C</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">10°C – 14°C</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">70%</td><td class="py-2 text-gray-700 dark:text-gray-300">60% – 80%</td></tr>
+                  <tr><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">📦 Estoque Seco</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">22°C</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">18°C – 25°C</td><td class="py-2 pr-3 text-gray-700 dark:text-gray-300">40%</td><td class="py-2 text-gray-700 dark:text-gray-300">30% – 55%</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
+
+          <div class="flex gap-3 pt-2">
+            <button type="button" onclick="closeZonaModal()" class="btn btn-secondary flex-1">Cancelar</button>
+            <button type="submit" class="btn btn-primary flex-1">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Adicionar Zona
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Telegram Overlay -->
+  <div id="telegram-overlay" class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 ease-out" onclick="closeTelegramModal()"></div>
+
+  <!-- Telegram Modal -->
+  <div id="telegram-modal" class="fixed inset-0 z-50 flex items-center justify-center px-4 hidden">
+    <div id="telegram-modal-box" class="w-full max-w-md glass-card overflow-hidden scale-95 opacity-0 transition-all duration-300 ease-out" style="background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(255, 255, 255, 0.08);">
+      <!-- Header -->
+      <div class="px-5 py-4 flex items-center gap-3 border-b border-gray-700/50">
+        <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-semibold text-white">EcoFood Alert</p>
+          <p class="text-xs text-gray-400">Bot de Notificações</p>
+        </div>
+        <span class="text-xs text-gray-500" data-field="timestamp"></span>
+      </div>
+
+      <!-- Body -->
+      <div class="px-5 py-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-base font-bold text-red-400">⚠ ALERTA CRÍTICO</p>
+            <p class="text-xs text-gray-400">Risco iminente de perda</p>
+          </div>
+        </div>
+
+        <div class="bg-gray-800/50 rounded-xl p-4 space-y-3 mb-4">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-400">Produto</span>
+            <span class="text-sm font-medium text-white" data-field="produto"></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-400">Lote</span>
+            <span class="text-sm font-medium text-white" data-field="lote"></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-400">Validade</span>
+            <span class="text-sm font-medium text-white" data-field="validade"></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-400">Temperatura</span>
+            <span class="text-sm font-medium text-white" data-field="temperatura"></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-400">Status</span>
+            <span class="badge bg-red-500/20 text-red-400 border border-red-500/30" data-field="risco"></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-400">Eco-Score</span>
+            <span class="text-sm font-bold text-yellow-400" data-field="ecoscore"></span>
+          </div>
+        </div>
+
+        <div class="bg-gray-800/30 rounded-xl p-3 mb-5">
+          <p class="text-xs text-gray-400 leading-relaxed">
+            <span class="text-blue-400">@EcoFoodBot</span> Uma ação imediata é recomendada para evitar perda. 
+            Verifique as condições de armazenamento e priorize a distribuição ou doação deste lote.
+          </p>
+        </div>
+
+        <button onclick="closeTelegramModal()" class="btn btn-primary w-full">
+          Entendi, vou verificar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="dashboard.html" class="nav-logo">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C8 8 5 12 3 14c-2 2-3 4-3 6 0 1.1.9 2 2 2 3 0 7-2 10-6s5-8 5-12c0-1.1-.9-2-2-2s-2 .9-2 2 1 4 1 6c0 2-1 4-2 5s-3 2-5 2c-1 0-2-.3-3-.8 1-1.5 2-3 3-4.5s3-4.5 6-9.7z"/>
+          </svg>
+        </div>
+        <span>EcoFood Monitor</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="dashboard.html" class="nav-link active">Dashboard</a>
+        <a href="entrada.html" class="nav-link">Entrada</a>
+        <a href="monitoramento.html" class="nav-link">Monitoramento</a>
+      </div>
+
+      <div class="nav-actions">
+        <button id="theme-toggle" class="btn-icon !w-9 !h-9 rounded-full" aria-label="Alternar tema"></button>
+        <button onclick="resetAllData()" class="btn-icon !w-9 !h-9 rounded-full !text-red-400 hover:!bg-red-50 dark:hover:!bg-red-900/20 hover:!text-red-500" title="Resetar dados do sistema">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+          </svg>
+        </button>
+        <a href="index.html" class="btn btn-ghost btn-sm !text-red-500 hover:!text-red-600 !border-red-200 dark:!border-red-900">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
+          </svg>
+          Sair
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="pt-24 pb-12 px-4 max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in-up">
+      <div>
+        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">
+          <span class="text-emerald-600 dark:text-emerald-400">Centro</span> de Comando
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+          Monitore lotes, riscos e métricas de sustentabilidade.
+        </p>
+      </div>
+      <a href="entrada.html" class="btn btn-primary shrink-0">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Novo Lote
+      </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 animate-fade-in-up stagger-1">
+      <div class="glass-card p-5 text-center">
+        <p class="text-3xl font-extrabold text-gray-900 dark:text-white" id="count-total">0</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total de Lotes</p>
+      </div>
+      <div class="glass-card p-5 text-center">
+        <p class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400" id="count-baixo">0</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Risco Baixo</p>
+      </div>
+      <div class="glass-card p-5 text-center">
+        <p class="text-3xl font-extrabold text-yellow-500" id="count-medio">0</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Risco Médio</p>
+      </div>
+      <div class="glass-card p-5 text-center">
+        <p class="text-3xl font-extrabold text-red-500" id="count-critico">0</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Risco Crítico</p>
+      </div>
+    </div>
+
+    <!-- Zonas de Armazenamento -->
+    <div class="glass-card p-5 mb-8 animate-fade-in-up stagger-2">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+          </svg>
+          Zonas de Armazenamento
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 animate-pulse">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            AO VIVO
+          </span>
+        </h2>
+        <button onclick="openZonaModal()" class="btn btn-primary btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Adicionar Zona
+        </button>
+      </div>
+      <div id="zonas-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Renderizado pelo JS -->
+      </div>
+      <div id="zonas-empty" class="text-center py-8">
+        <svg class="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+          <path d="M9.75 3.75v2.25m3-2.25v2.25m3-2.25v2.25M3.375 6.75h17.25M3.375 6.75A2.625 2.625 0 016 4.125h12a2.625 2.625 0 012.625 2.625v10.5A2.625 2.625 0 0118 19.875H6a2.625 2.625 0 01-2.625-2.625V6.75z"/>
+        </svg>
+        <p class="text-sm text-gray-400 dark:text-gray-500">Nenhuma zona cadastrada.</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Adicione zonas para monitorar temperatura e umidade em tempo real.</p>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid md:grid-cols-2 gap-6 mb-8 animate-fade-in-up stagger-3">
+      <div class="glass-card p-5">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+          Produtos por Categoria
+        </h3>
+        <div class="h-56 flex items-center justify-center">
+          <canvas id="chart-categorias"></canvas>
+        </div>
+      </div>
+      <div class="glass-card p-5">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+          Distribuição de Risco
+        </h3>
+        <div class="h-56 flex items-center justify-center">
+          <canvas id="chart-risco"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de Lotes -->
+    <div class="glass-card overflow-hidden animate-fade-in-up stagger-4">
+      <div class="p-5 pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+          </svg>
+          Gestão de Lotes Críticos
+        </h2>
+
+        <!-- Filtros -->
+        <div class="flex gap-1 bg-gray-100 dark:bg-gray-800/50 rounded-lg p-1">
+          <button class="filter-tab active px-3 py-1.5 text-xs font-medium rounded-md transition-all" data-filter="todos" onclick="setFilter('todos')">Todos</button>
+          <button class="filter-tab px-3 py-1.5 text-xs font-medium rounded-md transition-all text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20" data-filter="baixo" onclick="setFilter('baixo')">Baixo</button>
+          <button class="filter-tab px-3 py-1.5 text-xs font-medium rounded-md transition-all text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20" data-filter="médio" onclick="setFilter('médio')">Médio</button>
+          <button class="filter-tab px-3 py-1.5 text-xs font-medium rounded-md transition-all text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20" data-filter="crítico" onclick="setFilter('crítico')">Crítico</button>
+        </div>
+      </div>
+
+      <div id="zona-filters" class="px-5 pb-3 flex flex-wrap gap-1.5">
+        <!-- Renderizado pelo JS com as zonas cadastradas -->
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-100 dark:border-gray-800">
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Produto</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Zona</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Validade</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Temp.</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Qtd</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Risco</th>
+              <th class="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="lotes-tbody">
+            <!-- Renderizado pelo JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden py-16 text-center">
+        <svg class="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+          <path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+        </svg>
+        <h3 class="text-lg font-semibold text-gray-400 dark:text-gray-500">Nenhum lote registrado</h3>
+        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1 mb-4">Cadastre produtos na página de entrada.</p>
+        <a href="entrada.html" class="btn btn-primary btn-sm">Ir para Entrada</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+</body>
+</html>
